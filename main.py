@@ -24,8 +24,8 @@ rows,cols,fps = cam.getVideoParameters(cap)
 scale,psi,theta = cam.getCameraExtrinsics()
 
 # Parameters for corner detection and Lucas Kanade Optical Flow
-feature_params = dict(maxCorners=500,qualityLevel=0.3,minDistance=7,blockSize=7)
-lk_params = dict( winSize = (15, 15), maxLevel = 2,
+feature_params = dict(maxCorners=100,qualityLevel=0.3,minDistance=7,blockSize=7)
+lk_params = dict( winSize = (25, 25), maxLevel = 3,
                   criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT,10, 0.03))
   
 # Take first frame and find corners in it
@@ -65,7 +65,7 @@ while(True):
     # Updating Previous frame and points 
     old_gray = frame_gray.copy()
     p0 = good_new.reshape(-1,1,2)
-    if p0.size < 50:
+    if p0.size < 20:
         p0 = cv2.goodFeaturesToTrack(old_gray, mask = None, **feature_params)
   
 cv2.destroyAllWindows()
