@@ -3,7 +3,7 @@
 # 2021-11-10
 
 '''
-Predict Pixel Movement umath.sing image rows and columns, focal length, pan, and tilt angles
+Predict Pixel Movement using image rows and columns, focal length, pan, and tilt angles
 '''
 
 import math
