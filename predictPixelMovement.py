@@ -3,11 +3,10 @@
 # 2021-11-10
 
 '''
-Predict Pixel Movement using image rows and columns, focal length, pan, and tilt angles
+Predict Pixel Movement umath.sing image rows and columns, focal length, pan, and tilt angles
 '''
 
 import math
-
 
 # Returns predicted point based on size of the image, previous point, focal length, psi, and theta
 def predictPixelMovement( rows, cols, previousPoint, foc, psi, theta ):
