@@ -6,6 +6,7 @@
 import cv2
 import numpy as np
 import predictPixelMovement as pm 
+import predictPanTilt as ppt 
 
 ###########################################################################
 #####################    FUNCTION CALLS     ###############################
@@ -23,7 +24,7 @@ def make_outerimage_zeros(img,b=100,c=(0,0,0)):
 def display_features(img,pts,radius=5,color=(255,255,255),text=''):
     for i,pt in enumerate(pts):
         cv2.circle(img,(int(pt[0]),int(pt[1])),radius,color,-1)
-    cv2.putText(img, text, (10,50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 2, color)
+    cv2.putText(img, text, (10,50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 2, color, 2)
 
 # Return image with lines between pts1 and pts2 with specified color
 def display_lines(img,pts1,pts2,color=(255,255,255)):
@@ -57,6 +58,7 @@ def show_opticalflow(img1,img2,text=''):
     pts1, st, err = cv2.calcOpticalFlowPyrLK(gray1,gray2,pts0,None,**lk_params)
     good_pts1 = pts1[st == 1]
     good_pts0 = pts0[st == 1]
+    move_pts0, move_pts1 = [],[]
     # Draw old points on Gray1 and new points on Gray 2
     display_features(img1, good_pts0,5,(208,0,0),'Corners')
     # Draw the moving points
@@ -66,9 +68,16 @@ def show_opticalflow(img1,img2,text=''):
         if movecheck > 0 and movecheck < 50:
             cv2.circle(img2, predicted, 5, (208,0,0), -1)
             cv2.line(img2, (int(old[0]),int(old[1])), (int(new[0]),int(new[1])), (255,255,255),2)
+            move_pts0.append(old)
+            move_pts1.append(new)
         else:
             cv2.circle(img2, predicted, 5, (0,0,208), -1)
-    cv2.putText(img2, text, (10,50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 2,(208,0,0))
+    move0 = np.array(move_pts0)
+    move1 = np.array(move_pts1)
+    pan, tilt = ppt.predictPanTiltMovement(480, 640,move0.reshape((-1,1,2)),move1.reshape(-1,1,2))
+    text2 = f'Pan: {pan:2.2f}, Tilt: {tilt:2.2f}'
+    cv2.putText(img2, text, (10,50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 2,(208,0,0),2)
+    cv2.putText(img2, text2, (700,700), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1.5, (255,255,255),2)
     return concat_tile([[img1,img2]])
 
 
@@ -84,6 +93,6 @@ img4 = cv2.imread('images/USAF-JapanMan-Tilt2.jpg')
 init_corners_optflow(corners=100)
 imgpan = show_opticalflow(img1, img2,'Pan')
 imgtilt = show_opticalflow(img3, img4,'Tilt')
-imgfinal = display_images('USAF-JapanMan',[[imgpan],[imgtilt]],0.5)
-#cv2.imwrite('twoimage_pantilt_optflow_demo.jpg',imgfinal)
+imgfinal = display_images('USAF-JapanMan',[[imgpan],[imgtilt]],0.3)
+cv2.imwrite('twoimage_pantilt_optflow_demo.jpg',imgfinal)
 cv2.destroyAllWindows()
