@@ -1,14 +1,10 @@
 # Optical Flow Background Estimation (simplified Python version)
-# Add your own intrinsics and extrinsics for pan/tilt/zoom motiongit
+# Add your own intrinsics and extrinsics for pan/tilt/zoom motion
 # Daniel D. Doyle
 # 2021-11-10 
 
 '''
-This simplified Python code is based upon the following work (original work done in C++):
-Doyle, D.D., Jennings, A.L., Black, J.T., 'Optical flow background estimation for real-time 
-pan/tilt camera object tracking, 'Measurement, Vol 48, 2014, Pages 195-207, ISSN 0263-2241,
-https://doi.org/10.1016/j.measurement.2013.10.025.
-(https://www.sciencedirect.com/science/article/pii/S0263224113005241)
+This simplified Python code is based upon the following work (original work done in C++)
 '''
 
 import numpy as np
@@ -24,9 +20,9 @@ rows,cols,fps = cam.getVideoParameters(cap)
 scale,psi,theta = cam.getCameraExtrinsics()
 
 # Parameters for corner detection and Lucas Kanade Optical Flow
-feature_params = dict(maxCorners=100,qualityLevel=0.3,minDistance=7,blockSize=7)
+feature_params = dict(maxCorners=200,qualityLevel=0.3,minDistance=10,blockSize=10)
 lk_params = dict( winSize = (25, 25), maxLevel = 3,
-                  criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT,10, 0.03))
+                  criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT,5, 0.03))
   
 # Take first frame and find corners in it
 ret, old_frame = cap.read()
@@ -51,7 +47,7 @@ while(True):
     for i, (new, old) in enumerate(zip(good_new,good_old)):
         predicted = pm.predictPixelMovement(rows, cols, old, foc, psi, theta)
         movecheck = cv2.norm(predicted-new)
-        if movecheck > 4:
+        if movecheck > 4 and movecheck < 50:
             frame = cv2.circle(frame, predicted, 5, (208,0,0), -1)
             frame = cv2.line(frame, tuple(old), tuple(new), (255,255,255),2)
         else:
@@ -65,7 +61,7 @@ while(True):
     # Updating Previous frame and points 
     old_gray = frame_gray.copy()
     p0 = good_new.reshape(-1,1,2)
-    if p0.size < 20:
+    if p0.size < 10:
         p0 = cv2.goodFeaturesToTrack(old_gray, mask = None, **feature_params)
   
 cv2.destroyAllWindows()
